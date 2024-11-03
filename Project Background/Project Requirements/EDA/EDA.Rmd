@@ -1,0 +1,238 @@
+---
+title: "Exploratory Data Analysis"
+date: "10/15/2024"
+---
+
+“Torture the data, and it will confess to anything.” — Ronald Coase
+
+
+Why EDA is Important?
+===
+
+Exploratory Data Analysis (EDA) is a crucial step in any data analysis process because it helps understand the **structure and underlying patterns** in the data before making formal modeling decisions. Some key reasons why EDA is important:
+
+1. **Data Understanding**: EDA allows you to familiarize yourself with the dataset, including its size, variables, types, and relationships. By inspecting data distributions, missing values, and outliers, you gain insight into the quality and nature of the data you're working with.
+
+2. **Data Cleaning and Preprocessing**: EDA often reveals the need for data cleaning, such as handling missing values, transforming variables, or correcting data entry errors. Well-prepared data leads to more accurate and reliable models.
+
+
+3. **Detecting Anomalies**: EDA highlights anomalies or outliers in the data that may affect model performance or lead to incorrect conclusions. Identifying and addressing these outliers early can prevent skewed results.
+
+
+4. **Identifying Patterns and Relationships**: Through visualizations and summary statistics, EDA helps in discovering patterns, trends, and relationships between variables. This step is essential for generating hypotheses and guiding the next steps of analysis.
+
+5. **Informing Model Selection**: By analyzing distributions, correlations, and variability, EDA informs the choice of statistical models or machine learning algorithms. For example, knowing whether data follows a normal distribution can influence the choice of statistical tests.
+
+6. **Assumptions Checking**: Many statistical methods and models rely on assumptions like linearity, homoscedasticity, and normality. EDA helps verify whether these assumptions hold for your data, allowing you to take corrective actions if necessary.
+
+7. **Improving Communication**: Visualizations produced during EDA (e.g., histograms, boxplots, scatterplots) provide intuitive ways to communicate findings to both technical and non-technical audiences. They simplify the presentation of complex data patterns.
+
+By understanding your data thoroughly through EDA, you minimize the risk of incorrect conclusions and make the modeling process more efficient and effective.
+
+Formats of EDA
+===
+
+EDA's format and approach vary depending on the type of data being analyzed, as different data types require different methods to explore and understand their characteristics. Taking tabular, text, and image data as examples, EDA can be different with different data types. 
+
+### 1. **Tabular Data**
+Tabular data is structured in rows and columns (e.g., CSV files, spreadsheets), making it one of the most commonly encountered formats. EDA for tabular data focuses on understanding the relationships between variables, summary statistics, and potential patterns.
+
+- **Descriptive Statistics**: Mean, median, mode, standard deviation, and range are calculated to understand the **distribution** of numerical variables.
+- **Visualizations**: Histograms, boxplots, and scatter plots are used to inspect the **distribution** of variables and identify relationships.
+- **Missing Values**: Missing data patterns are explored to assess data quality and determine how missingness might affect analysis.
+- **Correlations**: Heatmaps and correlation matrices can reveal relationships between numerical variables, indicating multicollinearity or potential associations.
+
+### 2. **Text Data**
+Text data is unstructured, meaning that the data doesn’t have a predefined structure, and traditional statistical techniques don't apply directly. EDA for text focuses on extracting meaningful information from large volumes of text.
+
+- **Word Frequency Analysis**: Identifying the most common words or phrases in the text (unigrams, bigrams, trigrams) to get a sense of the dataset’s contents.
+
+- **Tokenization**: Splitting text into words (tokens) is an essential preprocessing step to explore word usage and patterns.
+
+- **Word Clouds**: These visual representations display word frequencies, with more frequent words appearing larger. This helps to highlight key themes.
+
+- **Sentiment Analysis**: EDA for text often involves detecting the sentiment (positive, negative, neutral) to understand overall tone and emotion.
+
+- **Topic Modeling**: Using techniques like Latent Dirichlet Allocation (LDA) to identify clusters of related words (topics) that can summarize the underlying themes in the data.
+
+
+### 3. **Image Data**
+Image data is also unstructured, and EDA for images focuses on the visual content and pixel-level information rather than traditional statistics.
+
+- **Pixel Intensity Distribution**: Visualizations like histograms of pixel intensities can reveal the brightness, contrast, and general characteristics of images.
+- **Image Resizing and Cropping**: During EDA, images may be resized or cropped to ensure they are uniform and ready for model input.
+- **Image Metadata**: Examining image properties such as size, resolution, and color channels (RGB or grayscale) helps in understanding the nature of the dataset.
+- **Image Augmentation**: Exploring how different transformations (flipping, rotating, or zooming) affect the dataset can be an important EDA step for image data in deep learning.
+- **Principal Component Analysis (PCA)**: Dimensionality reduction techniques like PCA can be applied to image data to reduce the complexity and visualize high-dimensional features in a 2D space.
+
+
+Case Study: Prostate Cancer Data 
+===
+
+We take will use the prostate cancer (from the book [The Elements of Statistical Learning](http://statweb.stanford.edu/~tibs/ElemStatLearn/)) in this example. The measured variables:
+
+- `lpsa`: log PSA (prostate-specific antigen) score
+- `lcavol`: log cancer volume
+- `lweight`: log prostate weight
+- `age`: age of patient
+- `lbph`: log of the amount of benign prostatic hyperplasia
+- `svi`: seminal vesicle invasion
+- `lcp`: log of capsular penetration
+- `gleason`: Gleason score 
+- ` pgg45`: percent of Gleason scores 4 or 5 
+
+```{r}
+pros.df = read.table("pros.dat") 
+
+dim(pros.df)
+```
+
+---
+
+```{r}
+head(pros.df)
+```
+
+Some example questions we might be interested in:
+
+- What is the relationship between `lcavol` and `lweight`?
+- What is the relationship between `svi` and `lcavol`, `lweight`?
+- Can we predict `lpsa` from the other variables?
+- Can we predict whether `lpsa` is high or low, from other variables?
+
+Exploratory data analysis
+===
+
+
+Before pursuing a specific model, it's generally a good idea to look at your data. When done in a structured way, this is called **exploratory data analysis** (EDA). In a nutshell, EDA is the process of summarizing important characteristics of data in order to gain better understanding of the dataset.
+
+E.g., you might investigate:
+
+- What are the distributions of the variables?
+- Are there distinct subgroups of samples?
+- Are there any noticeable outliers?
+- Are there interesting relationship/trends to model?
+
+Distributions of prostate cancer variables
+===
+
+```{r}
+colnames(pros.df) # These are the variables
+par(mfrow=c(3,3), mar=c(4,4,2,0.5)) # Setup grid, margins
+for (j in 1:ncol(pros.df)) {
+  hist(pros.df[,j], xlab=colnames(pros.df)[j],
+       main=paste("Histogram of", colnames(pros.df)[j]),
+       col="lightblue", breaks=20)
+}
+```
+
+---
+
+What did we learn? A bunch of things! E.g.,
+
+- `svi`, the presence of seminal vesicle invasion, is binary
+- `lcp`, the log amount of capsular penetration, is very skewed, a bunch of men with little (or none?), then a big spread.
+- `gleason`, takes integer values of 6 and larger; how does it relate to `pgg45`, the percentage of Gleason scores 4 or 5?
+- `lpsa`, the log PSA score, is close-ish to normally distributed
+  
+After reading more and asking our doctor friends some questions, we learn:
+
+- When the actual capsular penetration is very small, it can't be properly measured, so it just gets arbitrarily set to 0.25 (and we can check that `min(pros.df$lcp)` $\approx \log{0.25}$)
+- The variable `pgg45` measures the percentage of 4 or 5 Gleason scores that were recorded over their visit history *before* their final current Gleason score, stored in `gleason`; a higher Gleason score is worse, so `pgg45` tells us something about the severity of their cancer in the past
+  
+Correlations between prostate cancer variables
+===
+
+```{r}
+pros.cor = cor(pros.df)
+round(pros.cor,3) 
+```
+
+Some strong correlations! Let's find the biggest (in absolute value):
+
+```{r}
+pros.cor[lower.tri(pros.cor,diag=TRUE)] = 0 # Why only upper tri part? 
+pros.cor.sorted = sort(abs(pros.cor),decreasing=T)
+pros.cor.sorted[1]
+vars.big.cor = arrayInd(which(abs(pros.cor)==pros.cor.sorted[1]), 
+                        dim(pros.cor)) # Note: arrayInd() is useful
+colnames(pros.df)[vars.big.cor] 
+```
+
+This is not surprising, given what we know about `pgg45` and `gleason`; essentially this is saying: if their Gleason score is high now, then they likely had a bad history of Gleason scores
+
+---
+
+Let's find the second biggest correlation (in absolute value):
+
+```{r}
+pros.cor.sorted[2]
+vars.big.cor = arrayInd(which(abs(pros.cor)==pros.cor.sorted[2]), 
+                        dim(pros.cor))
+colnames(pros.df)[vars.big.cor] 
+```
+
+This is more interesting! If we wanted to predict `lpsa` from the other variables, then it seems like we should at least include `lcavol` as a predictor
+
+Visualizing relationships among variables, with `pairs()`
+===
+
+Can easily look at multiple scatter plots at once, using the `pairs()` function. The first argument is written like a **formula**, with no response variable. We'll hold off on describing more about formulas until we learn `lm()`, shortly
+
+```{r}
+pairs(~ lpsa + lcavol + lweight + lcp, data=pros.df)
+```
+
+Inspecting relationships over a subset of the observations
+===
+
+As we've seen, the `lcp` takes a bunch of really low values, that don't appear to have strong relationships with other variables. Let's get rid of them and see what the relationships look like
+
+```{r}
+pros.df.subset = pros.df[pros.df$lcp > min(pros.df$lcp),] #how to do this using subset?
+nrow(pros.df.subset) # Beware, we've lost a half of our data! 
+pairs(~ lpsa + lcavol + lweight + lcp, data=pros.df.subset)
+```
+
+Testing means between two different groups
+===
+
+Recall that `svi`, the presence of seminal vesicle invasion, is binary:
+
+```{r}
+table(pros.df$svi)
+```
+
+From http://www.ncbi.nlm.nih.gov/pmc/articles/PMC1476128/:
+
+> "When the pathologist’s report following radical prostatectomy describes seminal vesicle invasion (SVI) ... prostate cancer in the areolar connective tissue around the seminal vesicles and outside the prostate ...generally the outlook for the patient is poor."
+
+Does seminal vesicle invasion relate to the volume of cancer? Weight of cancer?
+
+---
+
+Let's do some plotting first:
+
+```{r}
+pros.df$svi = factor(pros.df$svi) 
+par(mfrow=c(1,2))
+plot(pros.df$svi, pros.df$lcavol, main="lcavol versus svi",
+     xlab="SVI (0=no, 1=yes)", ylab="Log cancer volume")
+plot(pros.df$svi, pros.df$lweight, main="lweight versus svi",
+     xlab="SVI (0=no, 1=yes)", ylab="Log cancer weight")
+```
+
+Visually, `lcavol` looks like it has a big difference, but `lweight` perhaps does not
+
+---
+
+Now let's try simple two-sample t-tests:
+
+```{r}
+t.test(pros.df$lcavol[pros.df$svi==0],
+       pros.df$lcavol[pros.df$svi==1])
+t.test(pros.df$lweight[pros.df$svi==0],
+       pros.df$lweight[pros.df$svi==1])
+```
+
+Confirms what we saw visually
