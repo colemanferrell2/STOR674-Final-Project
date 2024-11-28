@@ -40,4 +40,4 @@ clear all; %clear all existing variables in the current environment
 close all; %close all figures
 
 %load the structrual connectome data into Matlab
-load PCA_Coeff_HCP_Functional_Connectome.mat
+load TNPCA_Coeff_HCP_Functional_Connectome.mat
