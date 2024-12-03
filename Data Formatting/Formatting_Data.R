@@ -52,10 +52,16 @@ write.csv(final_data, "Analysis/Pairwise_Corr_FC.csv", row.names = FALSE)
 Traits_Data <- readMat("Data/traits/175traits/HCP_175Traits.mat") 
 list2env(Traits_Data,envir = .GlobalEnv)
 
-#Combine subject ID with trait responses, also rename column names
+# Combine subject ID with trait responses, also rename column names
 traits.final <- cbind(hcp.subj.id,t(traits.175))
 colnames(traits.final)[2:ncol(traits.final)] <- paste0("Trait_", 1:(ncol(traits.final) - 1))
 colnames(traits.final)[1] <- "Subject_ID"
+
+# Filter traits that have NA values
+traits.final <- traits.final[rowSums(is.na(traits.final)) < 20, ]
+
+# Remove columns with any NAs
+traits.final <- df_filtered_rows[, colSums(is.na(df_filtered_rows)) == 0]
 
 #Write to .csv file in the /analysis folder
 write.csv(traits.final, "Analysis/Traits175.csv", row.names = FALSE)
