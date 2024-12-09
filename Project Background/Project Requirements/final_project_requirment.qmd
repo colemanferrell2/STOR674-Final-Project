@@ -1,0 +1,144 @@
+---
+title: "Final Project Requirements: STOR 674"
+author: "Zhengwu Zhang"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: html_document
+---
+
+# Overview
+
+The final project of this course aims to integrate the computational and methodological tools you’ve learned for reproducible data science. The primary focus is on applying techniques that ensure your analysis can be replicated by others and that your findings are transparent and robust.
+
+## Project Options
+
+Each team will choose **one** of the three project options. The options focus on real-world datasets that require thoughtful organization, analysis, and reporting. The final deliverables will include:
+
+1. **A report**: Structured like a scientific paper with Introduction, Methodology, Methods for Reproducibility, and Results sections.
+2. **A 30-minute presentation**: Summarize your findings and demonstrate the reproducibility techniques used throughout the project.
+
+### Reproducibility Focus
+
+You are required to **emphasize reproducibility** in your workflow, code, and analysis. This should be clearly articulated in both your report and presentation. The following aspects of reproducibility are essential:
+
+
+
+# Folder Structure & Organization
+
+Ensure your folder and project files are **well-organized**, so that others can easily navigate and reproduce your results. A suggested folder structure is as follows:
+
+```bash
+project_name/
+|-- data/                   # Raw and cleaned data
+|-- scripts/                # Scripts for analysis
+|-- results/                # Output files (e.g., figures, tables)
+|-- report/                 # Your final report (LaTeX/Word)
+|-- containers/             # Docker or Singularity files, if applicable
+|-- README.md               # Brief explanation of the project, instructions for reproducing
+```
+
+- **README.md**: Provide a brief explanation of the project and the steps necessary to reproduce the analysis.
+- **Data folder**: Include raw data (if the raw data is not very bigs) and any necessary data preprocessing steps. Do not manually modify data files; instead, write scripts that transform them programmatically.
+- If you choose **Option 2**, please discuss with your instructor before you share the data publicly. 
+
+
+# Exploratory Data Analysis (EDA)
+
+Make your **EDA reproducible**. Use RMarkdown or Python notebooks to conduct EDA rather than performing analyses interactively without saving your code. Document your EDA process:
+
+- Clearly label plots and visualizations.
+- Record all decisions made during the EDA process (e.g., outlier detection, variable transformations).
+
+
+
+# Code & Abstraction for Reproducibility
+
+When writing your code, adhere to principles that facilitate reproducibility, such as **modularity** and **abstraction**:
+
+- **Functions**: Break your code into small, reusable functions.
+- **Parameterization**: Avoid hardcoding values; instead, use parameters to make the code adaptable.
+- **R packages/Python modules**: Where applicable, consider bundling your analysis into an R package or Python module. This demonstrates that you’ve learned how to package code for future use.
+
+**Unit testing**: Use testing frameworks to write unit tests for your key functions, ensuring that they behave as expected.
+
+- In R: Consider using the `testthat` package.
+- In Python: Utilize `pytest` for test scripts.
+
+
+
+# Version Control with Git
+
+Use **Git** for version control throughout your project. You should:
+
+- Create meaningful commits with clear messages.
+- Use **branching** to separate feature development from the main branch.
+- Apply **merge** and **rebase** operations if necessary to handle conflicts.
+- Use **GitHub** or similar platforms to share your repository.
+
+
+
+# Reproducible Computing Environment
+
+Set up a **reproducible computing environment** using containerization tools like **Docker** or **Singularity**. This ensures that anyone running your analysis will have the same software environment and dependencies.
+
+1. **Dockerfile or Singularity recipe**: Create a file specifying the environment required to run your analysis.
+2. **Documentation**: Include instructions for building the container and running the analysis within it.
+
+Example `Dockerfile` snippet:
+
+```dockerfile
+FROM rocker/verse:latest  # Example for R projects
+RUN R -e "install.packages(c('tidyverse', 'ggplot2'))"
+```
+
+# Other Considerations for Reproducibility
+
+In addition to the core requirements, please consider the following to ensure your project is fully reproducible:
+
+### 1. **Comprehensive Documentation**
+   - **Code comments**: Make sure to include comments in your code explaining what each section does.
+   - **Process documentation**: Create a simple file (e.g., README.md) that describes your project structure, how to run the analysis, and any necessary steps to replicate the work.
+
+### 2. **Controlling Randomness**
+   - **Set random seeds**: If your analysis involves any randomness (e.g., random sampling, machine learning), ensure you set random seeds (`set.seed()` in R or `random.seed()` in Python) so that results can be exactly reproduced.
+   - **Record seed values**: Include the seed values used in your documentation so others can replicate your results.
+
+### 3. **Dependency Management**
+   - **Capture software environment**: Use tools like `renv` (R) or `conda` (Python) to save the exact versions of the libraries and packages used in your project. This ensures others can recreate the same computing environment.
+   - **Share environment files**: Include a file like `environment.yml` (for Python) or a `renv.lock` file (for R) to help others set up the necessary packages easily.
+
+### 4. **Reproducible Data Science**
+   - **Prediction vs. Inference**: Clearly distinguish whether your goal is to predict outcomes or to infer relationships between variables. Different goals may require different techniques and evaluations for reproducibility.
+   - **Cross-validation**: Use proper cross-validation techniques to ensure that your results generalize to unseen data. Document how you separate your training, testing, and validation datasets.
+   - **Model Evaluation**: Use standardized metrics to evaluate your models (e.g., accuracy, precision, recall for classification tasks). Ensure these metrics are reproducible by providing code and explanations.
+   - **Avoid Data Leakage**: Ensure that no information from the test set leaks into the training process, as this can lead to artificially inflated performance metrics.
+   - **Transparent Reporting**: In your report, clearly describe how models were tuned (e.g., hyperparameter optimization) and evaluated. Make sure that your process can be repeated with the same datasets and code.
+
+
+# Report & Presentation
+
+## Report
+
+Your report should clearly outline:
+
+- **Introduction**: The background and motivation for the project.
+- **Methodology**: The analytical methods and models applied.
+- **Methods for Reproducibility**: Describe the techniques from the course (e.g., version control, containers, reproducible scripts) that were applied to ensure the project is reproducible.
+- **Results**: Present your findings, supported by figures and tables. Ensure that these outputs can be recreated by running your scripts.
+
+
+## Presentation
+
+You will give a **30-minute presentation** summarizing:
+
+1. Your project’s objectives and dataset.
+2. The analytical methods and tools applied.
+3. How reproducibility techniques were employed.
+4. Key findings and conclusions.
+
+Make sure to demonstrate the use of reproducibility techniques in your code and project setup during the presentation.
+
+---
+
+# Final Remarks 
+
+By the end of the project, your goal is to have a fully reproducible analysis, from data preprocessing to final results, documented with clear steps for others to follow. All materials should be stored in a well-organized, version-controlled repository, with containerized environments ensuring that your analysis is computationally reproducible.
