@@ -1,23 +1,8 @@
-# Load necessary libraries and source functions
-setup_environment <- function() {
-  library(combootcca)
-  library(dplyr)
-  library(ggplot2)
-  library(CCA)
-  source("scripts/functions.R")
-  set.seed(123)
-}
-
-# Load data and set working directory
-load_data <- function() {
-  setwd("C:/Users/colem/Desktop/STOR 674/STOR674 Final Project")
-  load("data/Sample_Data.RData")
-}
 
 # Perform Canonical Correlation Analysis
 run_cca <- function(X, Y, nboots = 1000, level = 0.9) {
-  ref_solution <- cc(X, Y)
-  bootstrp_solution <- cca_ci_boot(
+  ref_solution <- CCA::cc(X, Y)
+  bootstrp_solution <- combootcca::cca_ci_boot(
     X, Y,
     align = combootcca:::cca_align_hungarian_weighted,
     ref = ref_solution,
@@ -47,19 +32,19 @@ extract_and_prepare_ci <- function(bootstrp_solution, coef_type = "xcoef", pc_in
 
 # Plot confidence intervals
 plot_ci <- function(data, title, output_path, y_limits = NULL) {
-  plot <- ggplot(data, aes(x = Index, ymin = LB, ymax = UB, color = CI_contains_zero)) +
-    geom_errorbar(width = 0.2) +
-    geom_point(aes(y = (LB + UB) / 2)) +
-    scale_color_manual(values = c("red", "blue")) +
-    facet_wrap(~ PC, scales = "free_y", ncol = 1) +
-    geom_hline(yintercept = 0, color = "black") +
-    ggtitle(title) +
-    labs(x = "Principal Component", y = "Value", color = "CI Contains Zero") +
-    theme_minimal()
+  plot <- ggplot2::ggplot(data, ggplot2::aes(x = Index, ymin = LB, ymax = UB, color = CI_contains_zero)) +
+    ggplot2::geom_errorbar(width = 0.2) +
+    ggplot2::geom_point(ggplot2::aes(y = (LB + UB) / 2)) +
+    ggplot2::scale_color_manual(values = c("red", "blue")) +
+    ggplot2::facet_wrap(~ PC, scales = "free_y", ncol = 1) +
+    ggplot2::geom_hline(yintercept = 0, color = "black") +
+    ggplot2::ggtitle(title) +
+    ggplot2::labs(x = "Principal Component", y = "Value", color = "CI Contains Zero") +
+    ggplot2::theme_minimal()
   if (!is.null(y_limits)) {
-    plot <- plot + ylim(y_limits)
+    plot <- plot + ggplot2::ylim(y_limits)
   }
-  ggsave(output_path, plot = plot, width = 10, height = 6)
+  ggplot2::ggsave(output_path, plot = plot, width = 10, height = 6)
 }
 
 # Calculate percentage contributions for loadings

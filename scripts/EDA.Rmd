@@ -1,0 +1,234 @@
+---
+title: "EDA"
+author: "Malavika Mampally"
+date: "2024-12-08"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+**I. Load the 3 data sets:**
+
+1.  Pairwise Correlation of FC between regions
+
+    Dimensions: 623 x 2278
+
+    Contains FC correlations for 2278 pairs of brain regions of 623 subjects
+
+2.  Subj_175_Traits
+
+    Dimensions: 623 x 123
+
+    Contains 123 Subj_175_Traits of 623 subjects
+
+3.  Confounding Variables
+
+    Dimensions: 623 x 2
+
+    Contains age and sex of 623 subjects
+
+```{r}
+##code
+data=cbind(Subj_confound_var,Subj_175_Traits,Pairwise_Corr_FC)
+```
+
+**II. Create a population plot to visualize demographics**
+
+```{r}
+data1 <- data %>%
+  mutate(Age = cut(Age, breaks = c(0, 20, 23, 26, 29, 32, 35, 38, Inf), 
+                         labels = c("0-20", "20-23", "23-26", "26-29", "29-32", "32-35", 
+                                    "35-38", "38+"), right = FALSE))
+# Convert Gender to a categorical variable
+summary_data <- data1 %>%
+  group_by(Age, Gender) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  mutate(
+    Gender = factor(Gender, levels = c(1, 2), labels = c("Female", "Male")),  # Convert Gender to categorical
+    count = ifelse(Gender == "Male", -count, count)  # Negative counts for Male
+  )
+
+# Plot population pyramid
+population->ggplot(summary_data, aes(x = Age, y = count, fill = Gender)) +
+  geom_bar(stat = "identity", width = 0.8) + geom_text(aes(label = abs(count)),  # Add labels for counts
+                                                       position = position_stack(vjust = 0.5),  # Position text in the middle of the bar
+                                                       color = "black", size = 3.5)+
+  coord_flip() +
+  scale_y_continuous(labels = abs) +  # Ensure y-axis labels are positive
+  scale_fill_manual(values = c("Male" = "lightblue", "Female" = "royalblue")) +
+  labs(
+    title = "Population Pyramid",
+    x = "Age Groups (Years)",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    legend.position = "top"
+  )
+##ggsave("population.png", plot = population)
+
+```
+
+**III. Correlation**
+
+```{r}
+library(corrplot)
+subset_data=data[,c(1:7,77:89,126:129,2399:2403)]
+correlation1=corrplot(cor(subset_data))
+##ggsave("correlation1.png", plot = correlation1)
+
+```
+
+**IV. Confounding Variables correlation tests**
+
+```{r}
+
+##Brain Region v/s Age Correlation test
+
+corr_brain_age <- apply(Pairwise_Corr_FC, 2, function(br) cor(br, data$Age, use = "complete.obs"))
+
+#store the p value from the tests for each pair
+pvals_brain_age <- apply(Pairwise_Corr_FC, 2, function(br) cor.test(br, data$Age)$p.value)
+
+##Brain Region v/s Gender ANOVA Test
+
+pvals_brain_gender <- apply(Pairwise_Corr_FC, 2, function(br) {
+  anova_result <- aov(br ~ data$Gender)
+  summary(anova_result)[[1]]["data$Gender", "Pr(>F)"]
+})
+
+##Traits v/s Age Correlation Test
+
+corr_traits_age <- apply(Subj_175_Traits, 2, function(trait) cor(trait, data$Age, use = "complete.obs"))
+
+#store the p value from the tests for each pair
+pvals_traits_age <- apply(Subj_175_Traits, 2, function(trait) cor.test(trait, data$Age)$p.value)
+
+##Traits v/s Gender ANOVA Test
+
+pvals_traits_gender <- apply(Subj_175_Traits, 2, function(trait) {
+  anova_result <- aov(trait ~ data$Gender)
+  summary(anova_result)[[1]]["data$Gender", "Pr(>F)"]
+})
+
+#Threshold for significance
+alpha <- 0.05
+
+#For brain regions
+significant_brain_age <- sum(pvals_brain_age < alpha) #counts instances where p value is less than 0.05
+significant_brain_gender <- sum(pvals_brain_gender < alpha)
+
+# For Traits
+significant_traits_age <- sum(pvals_traits_age < alpha,na.rm = T)
+significant_traits_gender <- sum(pvals_traits_gender < alpha)
+
+```
+
+**V. Plot to show correlation with Age**
+
+```{r}
+#find index of significant brain regions
+
+significant_brain_age <- which(pvals_brain_age < alpha)  #for age
+significant_brain_gender <- which(pvals_brain_gender < alpha)  #for gender
+
+# Extract the first 5 significant variables for plotting
+sig_brain_age_vars <- Pairwise_Corr_FC[, significant_brain_age[1:5]]
+sig_brain_gender_vars <- Pairwise_Corr_FC[, significant_brain_gender[1:5]]
+
+# Similarly find index of significant traits
+significant_traits_age <- which(pvals_traits_age < alpha)
+significant_traits_gender <- which(pvals_traits_gender < alpha)
+
+# Extract the first 5 significant traits for plotting
+sig_traits_age_vars <- Subj_175_Traits[, significant_traits_age[1:5]]
+sig_traits_gender_vars <- Subj_175_Traits[, significant_traits_gender[1:5]]
+
+#Plot mean  correlation among different age groups
+
+#Create age bins
+age_bins <- cut(data$Age, breaks = seq(20, 40, by = 3), include.lowest = TRUE)
+
+# Calculate mean values for each bin
+mean_values <- tapply(sig_brain_age_vars[, 1], age_bins, mean)
+# Plot with custom x-axis labels
+plot_regions_age=plot(seq(22, 38, by = 3), mean_values, type = "b", pch = 16,
+     xlab = "Age Group", ylab = "Mean Correlation",col="red",
+     main = "Mean Brain Region Correlation vs. Age Group", xaxt = "n")
++
+axis(1, at = seq(22, 38, by = 3), labels = levels(age_bins))
+
+
+##ggsave("brain_age.png,plot=plot_regions)
+```
+
+```{r}
+mean_values_tr=tapply(sig_traits_age_vars[,2],age_bins,mean)
+# Plot with custom x-axis labels
+plot_traits_age=plot(seq(22, 38, by = 3), mean_values_tr, type = "b", pch = 16,
+     xlab = "Age Group", ylab = "Mean Reaction time on a memory test",col="blue",
+     main = "Trait #9 vs. Age Group", xaxt = "n")+
+axis(1, at = seq(22, 38, by = 3), labels = levels(age_bins))
+
+##ggsave("traits_age.png",plot=plot_traits_age)
+```
+
+**VI. Plot to show correlation with Gender**
+
+```{r}
+male_data <- data %>% filter(Gender == 2)
+female_data <- data %>% filter(Gender == 1)
+male_sig=male_data[,c(4:8,127:131)] #select the significant brain regions
+female_sig=female_data[,c(4:8,127:131)]
+
+
+female_sig$Gender <- "Female"
+male_sig$Gender <- "Male"
+
+# Combine the datasets
+combined_data <- rbind(female_sig, male_sig)
+
+# Reshape the data to long format
+library(tidyr)
+long_data <- combined_data %>%
+  pivot_longer(
+    cols = starts_with("Trait") | starts_with("Region"),
+    names_to = "Variable",
+    values_to = "Value"
+  )
+
+# Calculate mean values for each group (Male/Female) and each variable
+library(dplyr)
+mean_data <- long_data %>%
+  group_by(Gender, Variable) %>%
+  summarise(Mean = mean(Value, na.rm = TRUE), .groups = "drop")
+
+regions_data <- mean_data %>% filter(grepl("Region", Variable))
+
+# Plot for Brain Regions
+plot_regions_gender <- ggplot(regions_data, aes(x = Variable, y = Mean, fill = Gender)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  labs(
+    title = "Comparison of Mean Values by Gender: Brain Regions",
+    x = "Brain Regions",
+    y = "Mean Value",
+    fill = "Gender"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_manual(values = c("Male" = "lightblue", "Female" = "royalblue"))
+
+##ggsave("brain_gender.png",plot=plot_regions_gender)
+```
+
+**VII. Re - Plot the heat map using the significant variables**
+
+```{r}
+sig_var=data[,c(1,2,4:8,127:131)]
+correlation2=corrplot(cor(sig_var))
+##ggsave("correlation2.png", plot = correlation2)
+```
