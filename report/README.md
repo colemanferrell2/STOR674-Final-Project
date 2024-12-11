@@ -4,7 +4,7 @@ This folder contains all the materials related to the final report. It includes:
 - References and sources cited in the paper.
 - The final version of the paper/report itself.
 
-## Contents
+## Subfolder Structure
 
 ### `Figures/`
 This folder contains all figures or tables included in the final report.
