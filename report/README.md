@@ -15,8 +15,8 @@ This folder contains the PDF copies of the references cited  in the paper and us
 ### `Project Background/`
 This folder contains all information related to the project requirements, as well as background materials on the connectome topic that were provided as part of the project.
 
-#### `Neural Network Backgoround/`
+- #### `Neural Network Backgoround/`
 Backgound on the Human Connectome Project and brain connectiity.
 
-#### `Project Requirements/`
+- #### `Project Requirements/`
 Contains requirements for the final project of STOR 674.
